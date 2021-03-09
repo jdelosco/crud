@@ -1,16 +1,32 @@
 import React, {useState} from 'react'
-import { isEmpty } from 'lodash'
+import { isEmpty , size} from 'lodash'
 import shortid from 'shortid'
 
 
 function App() {
   const [task, setTask] = useState("")
   const [tasks, setTasks] = useState([])  
+  const [editMode, setEditMode] = useState(false)
+  const [id, setId] = useState("")
+  const [error, setError] = useState(null)
+
+
+  const validForm = () => {
+    let isValid = true
+    setError(null)
+
+    if (isEmpty(task)) {
+      setError("You must enter a task")
+      isValid = false
+    }
+
+    return isValid
+  }
 
   const addTask = (e) => {
     e.preventDefault()
-    if (isEmpty(task)) {
-      console.log("Task is empty")
+
+    if (!validForm()) {
       return
     }
 
@@ -22,16 +38,39 @@ function App() {
       
     setTasks([...tasks, newTask])
 
-
     setTask("")
 
   }
 
+  const saveTask = (e) => {
+    e.preventDefault()
+   
+    if (!validForm()) {
+      return
+    }
+
+  const editedTasks = tasks.map(item => item.id == id ? {id, name:task} : item)
+  setTasks(editedTasks)
+  setEditMode(false)
+
+  setTask("")
+  setId("")
+  
+
+  }
+  
   const deleteTask = (id) => {
     const filteredTasks = tasks.filter(task => task.id !== id)
 
     setTasks(filteredTasks)
 
+  }
+
+
+  const editTask = (_task) => {
+    setTask(_task.name)
+    setEditMode(true)
+    setId(_task.id)
   }
 
   return (
@@ -41,14 +80,18 @@ function App() {
      <div className="row">
        <div className="col-8">
           <h4 className="text-center">Task List</h4>
+        {
+        (size(tasks) === 0)?
+          (<li className="list-group-item">No tasks found </li>):
+          (
           <ul className="list-group">
-
             {
             tasks.map((task) => (
               <li className="list-group-item" key = {task.id}> 
               <span className="lead">{task.name}</span>
               <button 
                 className="btn btn-danger btn-sm float-right mx-2"
+                onClick = {() => editTask(task)}
                 >Edit
               </button>
               <button 
@@ -59,12 +102,16 @@ function App() {
             </li>
             ))
             }
-
           </ul>
+        )
+        }
        </div>
        <div className="col-4">
-          <h4 className="text-center">Form</h4>
-          <form onSubmit={addTask}> 
+          <h4 className="text-center">{ editMode ? "Edit Task":"Add task"}</h4>
+          <form onSubmit={editMode? saveTask : addTask}> 
+            {
+              error && <span class="text-danger">{error}</span>
+            }
             <input
               type="text"
               className="form-control mb-2"
@@ -72,8 +119,8 @@ function App() {
               onChange={(text) => setTask(text.target.value)}
               value={task}
             />
-            <button className="btn btn-dark btn-block"
-            type="submit">Add</button>
+            <button className={editMode?"btn btn-warning btn-block":"btn btn-dark btn-block"}
+            type="submit">{editMode?"Save":"Add"}</button>
           </form>
        </div>
      </div>
