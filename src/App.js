@@ -1,6 +1,7 @@
-import React, {useState} from 'react'
+import React, {useState, useEffect} from 'react'
 import { isEmpty , size} from 'lodash'
 import shortid from 'shortid'
+import { getCollection } from './actions'
 
 
 function App() {
@@ -10,6 +11,13 @@ function App() {
   const [id, setId] = useState("")
   const [error, setError] = useState(null)
 
+
+  useEffect(() => {
+    (async () => {
+      const result = await getCollection("tasks")
+      setTasks(result.data)
+    })()
+  }, [])
 
   const validForm = () => {
     let isValid = true
@@ -49,7 +57,7 @@ function App() {
       return
     }
 
-  const editedTasks = tasks.map(item => item.id == id ? {id, name:task} : item)
+  const editedTasks = tasks.map(item => item.id === id ? {id, name:task} : item)
   setTasks(editedTasks)
   setEditMode(false)
 
