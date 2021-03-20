@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react'
 import { isEmpty , result, size} from 'lodash'
 import shortid from 'shortid'
-import { addDocument, getCollection, updateDocument } from './actions'
+import { addDocument, deleteDocument, getCollection, updateDocument } from './actions'
 
 
 function App() {
@@ -69,7 +69,7 @@ function App() {
       return
     }
 
-    const result = await updateDocument("tasks", id, {name: task})
+    const result = await deleteDocument("tasks", id, {name: task})
 
     if (!result.statusResponse) {
       setError(result.error)
@@ -86,7 +86,14 @@ function App() {
 
   }
   
-  const deleteTask = (id) => {
+  const deleteTask = async(id) => {
+    const result = await deleteDocument("tasks", id)
+
+    if (!result.statusResponse) {
+      setError(result.error)
+      return
+    }
+
     const filteredTasks = tasks.filter(task => task.id !== id)
 
     setTasks(filteredTasks)
@@ -117,14 +124,14 @@ function App() {
               <li className="list-group-item" key = {task.id}> 
               <span className="lead">{task.name}</span>
               <button 
-                className="btn btn-danger btn-sm float-right mx-2"
-                onClick = {() => editTask(task)}
-                >Edit
-              </button>
-              <button 
-                className="btn btn-warning btn-sm float-right"
+                className="btn btn-danger btn-sm float-right"
                 onClick = {() => deleteTask(task.id)}
                 >Delete
+              </button>
+              <button 
+                className="btn btn-warning btn-sm float-right mx-2"
+                onClick = {() => editTask(task)}
+                >Edit
               </button>
             </li>
             ))
